@@ -8,6 +8,7 @@ int main(){
     int x;
     cout<<"give me a no: "<<endl;
     cin>>x;
+    if(x==0)cout<<"you are gonna lose "<< endl;
     if(x%2==0)cout<<"you will win "<< endl;
     else cout<<"you are gonna lose "<< endl;
     return 0;
