@@ -1,1 +1,14 @@
+// writing game in c++
 
+#include<iostream>
+using namespace std;
+
+int main(){
+    int x;
+    cout<<"give me a no : "<<endl;
+    cin>>x;
+    if(x==0)cout<<"you are gonna lose "<< endl;
+    if(x%4==0)cout<<"you will lose "<< endl;
+    else cout<<"you are gonna win "<< endl;
+    return 0;
+}
