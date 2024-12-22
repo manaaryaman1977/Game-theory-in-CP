@@ -1,1 +1,14 @@
+// writing game in C++
+//Easy logic start with 1 and go to x, you will realize that you win only on even no of sticks left when you have to choose
 
+#include<iostream>
+using namespace std;
+
+int main(){
+    int x;
+    cout<<"give me a no: "<<endl;
+    cin>>x;
+    if(x%2==0)cout<<"you will win "<< endl;
+    else cout<<"you are gonna lose "<< endl;
+    return 0;
+}
