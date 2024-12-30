@@ -1,1 +1,17 @@
+#include<iostream>
+using namespace std;
+#include<vector>
 
+//code to calculate grundu no 
+
+int calculate_grundy(int n){
+    return n%4;
+}
+
+int main(){
+    int n;
+    cout<<"GIVE ME A NO: ";
+    cin>>n;
+    cout<<calculate_grundy(n)<<endl;
+    return 0;
+}
