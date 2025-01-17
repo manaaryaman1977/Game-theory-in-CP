@@ -1,1 +1,31 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+// Calculate the Minimum Excludant (Mex) of a set
+int calculateMex(unordered_set<int> Set) {
+    int Mex = 0;
+    while (Set.find(Mex) != Set.end())
+        Mex++;
+    return Mex;
+}
+
+// Compute the Grundy Number for a given value 'n'
+int calculateGrundy(int n) {
+    if (n == 0)
+        return 0;
+
+    unordered_set<int> Set;
+    Set.insert(calculateGrundy(n / 2));
+    Set.insert(calculateGrundy(n / 3));
+    Set.insert(calculateGrundy(n / 6));
+
+    return calculateMex(Set);
+}
+
+// Driver program
+int main() {
+    int n = 10;
+    cout << calculateGrundy(n);
+    return 0;
+}
 
