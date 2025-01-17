@@ -1,1 +1,127 @@
+#include <iostream>
+#include <math.h>
+using namespace std;
+
+#define COMPUTER 1
+#define HUMAN 2
+
+// Structure to represent a move in the game
+struct Move {
+    int pile_index;
+    int stones_removed;
+};
+
+// Display the current state of piles
+void showPiles(int piles[], int n) {
+    cout << "Current Game Status -> ";
+    for (int i = 0; i < n; i++)
+        cout << " " << piles[i];
+    cout << "\n";
+}
+
+// Check if the game is over
+bool gameOver(int piles[], int n) {
+    for (int i = 0; i < n; i++)
+        if (piles[i] != 0)
+            return false;
+    return true;
+}
+
+// Declare the winner of the game
+void declareWinner(int whoseTurn) {
+    if (whoseTurn == COMPUTER)
+        cout << "\nHUMAN won\n\n";
+    else
+        cout << "\nCOMPUTER won\n\n";
+}
+
+// Calculate the Nim-Sum of the piles
+int calculateNimSum(int piles[], int n) {
+    int nimsum = piles[0];
+    for (int i = 1; i < n; i++)
+        nimsum ^= piles[i];
+    return nimsum;
+}
+
+// Make a move in the game
+void makeMove(int piles[], int n, Move* move) {
+    int nim_sum = calculateNimSum(piles, n);
+
+    if (nim_sum != 0) { // Winning position
+        for (int i = 0; i < n; i++) {
+            if ((piles[i] ^ nim_sum) < piles[i]) {
+                move->pile_index = i;
+                move->stones_removed = piles[i] - (piles[i] ^ nim_sum);
+                piles[i] ^= nim_sum;
+                break;
+            }
+        }
+    } else { // Losing position, choose a random move
+        int non_zero_indices[n], count = 0;
+        for (int i = 0; i < n; i++)
+            if (piles[i] > 0)
+                non_zero_indices[count++] = i;
+
+        move->pile_index = non_zero_indices[rand() % count];
+        move->stones_removed = 1 + (rand() % piles[move->pile_index]);
+        piles[move->pile_index] -= move->stones_removed;
+
+        if (piles[move->pile_index] < 0)
+            piles[move->pile_index] = 0;
+    }
+}
+
+// Play the Nim game
+void playGame(int piles[], int n, int whoseTurn) {
+    cout << "\nGAME STARTS\n\n";
+    Move move;
+
+    while (!gameOver(piles, n)) {
+        showPiles(piles, n);
+        makeMove(piles, n, &move);
+
+        if (whoseTurn == COMPUTER) {
+            cout << "COMPUTER removes " << move.stones_removed
+                 << " stones from pile at index " << move.pile_index << endl;
+            whoseTurn = HUMAN;
+        } else {
+            cout << "HUMAN removes " << move.stones_removed
+                 << " stones from pile at index " << move.pile_index << endl;
+            whoseTurn = COMPUTER;
+        }
+    }
+
+    showPiles(piles, n);
+    declareWinner(whoseTurn);
+}
+
+// Predict the winner before playing
+void knowWinnerBeforePlaying(int piles[], int n, int whoseTurn) {
+    cout << "Prediction before playing the game -> ";
+    if (calculateNimSum(piles, n) != 0) {
+        if (whoseTurn == COMPUTER)
+            cout << "COMPUTER will win\n";
+        else
+            cout << "HUMAN will win\n";
+    } else {
+        if (whoseTurn == COMPUTER)
+            cout << "HUMAN will win\n";
+        else
+            cout << "COMPUTER will win\n";
+    }
+}
+
+// Driver function
+int main() {
+    int piles[] = {3, 4, 5};
+    int n = sizeof(piles) / sizeof(piles[0]);
+
+    // Predict the result before playing
+    knowWinnerBeforePlaying(piles, n, COMPUTER);
+
+    // Play the game with COMPUTER starting first
+    playGame(piles, n, COMPUTER);
+
+    return 0;
+}
 
