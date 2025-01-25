@@ -1,1 +1,210 @@
 
+#include <iostream>
+using namespace std;
+
+#define COMPUTER 1
+#define HUMAN 2
+
+struct move
+{
+    int pile_index;
+    int stones_removed;
+};
+
+void showPiles(int piles[], int n)
+{
+    cout << "Current Game Status -> ";
+    for (int i = 0; i < n; i++)
+        cout << " " << piles[i];
+    cout << "\n";
+}
+
+bool gameOver(int piles[], int n)
+{
+    for (int i = 0; i < n; i++)
+        if (piles[i] != 0)
+            return false;
+    return true;
+}
+
+void declareWinner(int whoseTurn)
+{
+    if (whoseTurn == COMPUTER)
+        cout << "\nCOMPUTER won\n\n";
+    else
+        cout << "\nHuman won\n\n";
+}
+
+int calculateNimSum(int piles[], int n)
+{
+    int nimsum = piles[0];
+    for (int i = 1; i < n; i++)
+        nimsum ^= piles[i];
+    return nimsum;
+}
+
+bool isEndgame(int piles[], int n)
+{
+    int non_zero_count = 0;
+    for (int i = 0; i < n; i++)
+    {
+        if (piles[i] > 1)
+            return false; // Not in endgame if any pile has more than 1 stone
+        if (piles[i] == 1)
+            non_zero_count++;
+    }
+    return true; // Endgame when only piles of size 1 remain
+}
+
+void makeMove(int piles[], int n, struct move *moves)
+{
+    int nim_sum = calculateNimSum(piles, n);
+
+    if (nim_sum != 0)
+    {
+        if (isEndgame(piles, n))
+        {
+            // Misère endgame strategy: Leave an even number of piles with 1 stone
+            int one_count = 0;
+            for (int i = 0; i < n; i++)
+                if (piles[i] == 1)
+                    one_count++;
+
+            for (int i = 0; i < n; i++)
+            {
+                if (piles[i] > 0)
+                {
+                    (*moves).pile_index = i;
+                    if (one_count % 2 == 0)
+                        (*moves).stones_removed = piles[i]; // Remove all stones
+                    else
+                        (*moves).stones_removed = piles[i] - 1; // Leave 1 stone
+                    piles[i] -= (*moves).stones_removed;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            // Standard Nim strategy
+            for (int i = 0; i < n; i++)
+            {
+                if ((piles[i] ^ nim_sum) < piles[i])
+                {
+                    (*moves).pile_index = i;
+                    (*moves).stones_removed = piles[i] - (piles[i] ^ nim_sum);
+                    piles[i] = (piles[i] ^ nim_sum);
+                    break;
+                }
+            }
+        }
+    }
+    else
+    {
+        // Losing position: Make any valid move
+        for (int i = 0; i < n; i++)
+        {
+            if (piles[i] > 0)
+            {
+                (*moves).pile_index = i;
+                (*moves).stones_removed = 1; // Always remove at least one stone
+                piles[i] -= 1;
+                break;
+            }
+        }
+    }
+}
+
+void playGame(int piles[], int n, int whoseTurn)
+{
+    cout << "\nGAME STARTS\n\n";
+    struct move moves;
+
+    while (!gameOver(piles, n))
+    {
+        showPiles(piles, n);
+        makeMove(piles, n, &moves);
+
+        if (moves.stones_removed <= 0)
+        {
+            cout << "Invalid move: Cannot remove 0 stones. Please fix the logic.\n";
+            break;
+        }
+
+        if (whoseTurn == COMPUTER)
+        {
+            cout << "COMPUTER removes " << moves.stones_removed
+                 << " stones from pile at index " << moves.pile_index << endl;
+            whoseTurn = HUMAN;
+        }
+        else
+        {
+            cout << "HUMAN removes " << moves.stones_removed
+                 << " stones from pile at index " << moves.pile_index << endl;
+            whoseTurn = COMPUTER;
+        }
+    }
+
+    showPiles(piles, n);
+    declareWinner(whoseTurn);
+}
+
+void knowWinnerBeforePlaying(int piles[], int n, int whoseTurn)
+{
+    cout << "Prediction before playing the game -> ";
+
+    if (isEndgame(piles, n))
+    {
+        int one_count = 0;
+        for (int i = 0; i < n; i++)
+            if (piles[i] == 1)
+                one_count++;
+
+        if (one_count % 2 == 0)
+        {
+            if (whoseTurn == COMPUTER)
+                cout << "HUMAN will win\n";
+            else
+                cout << "COMPUTER will win\n";
+        }
+        else
+        {
+            if (whoseTurn == COMPUTER)
+                cout << "COMPUTER will win\n";
+            else
+                cout << "HUMAN will win\n";
+        }
+    }
+    else
+    {
+        if (calculateNimSum(piles, n) != 0)
+        {
+            if (whoseTurn == COMPUTER)
+                cout << "COMPUTER will win\n";
+            else
+                cout << "HUMAN will win\n";
+        }
+        else
+        {
+            if (whoseTurn == COMPUTER)
+                cout << "HUMAN will win\n";
+            else
+                cout << "COMPUTER will win\n";
+        }
+    }
+}
+
+// Driver program to test the Misère Game
+int main()
+{
+    int piles[] = {3, 4, 5};
+    int n = sizeof(piles) / sizeof(piles[0]);
+
+    // Predict the winner before playing
+    knowWinnerBeforePlaying(piles, n, COMPUTER);
+
+    // Play the game
+    playGame(piles, n, COMPUTER);
+
+    return 0;
+}
