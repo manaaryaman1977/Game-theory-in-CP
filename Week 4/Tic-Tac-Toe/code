@@ -1,1 +1,132 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Move {
+    int row, col;
+};
+
+const char PLAYER = 'o';
+const char OPPONENT = 'x';
+
+// Check if there are moves left on the board
+bool isMovesLeft(char board[3][3]) {
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (board[i][j] == '_') {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// Evaluate the board state
+int evaluate(char board[3][3]) {
+    // Check rows for victory
+    for (int row = 0; row < 3; row++) {
+        if (board[row][0] == board[row][1] && board[row][1] == board[row][2]) {
+            if (board[row][0] == PLAYER) return +10;
+            if (board[row][0] == OPPONENT) return -10;
+        }
+    }
+
+    // Check columns for victory
+    for (int col = 0; col < 3; col++) {
+        if (board[0][col] == board[1][col] && board[1][col] == board[2][col]) {
+            if (board[0][col] == PLAYER) return +10;
+            if (board[0][col] == OPPONENT) return -10;
+        }
+    }
+
+    // Check diagonals for victory
+    if (board[0][0] == board[1][1] && board[1][1] == board[2][2]) {
+        if (board[0][0] == PLAYER) return +10;
+        if (board[0][0] == OPPONENT) return -10;
+    }
+
+    if (board[0][2] == board[1][1] && board[1][1] == board[2][0]) {
+        if (board[0][2] == PLAYER) return +10;
+        if (board[0][2] == OPPONENT) return -10;
+    }
+
+    return 0; // No winner
+}
+
+// Minimax function to find the optimal move
+int minimax(char board[3][3], int depth, bool isMax) {
+    int score = evaluate(board);
+
+    // If maximizer or minimizer has won, return the score
+    if (score == 10 || score == -10) return score;
+
+    // If no moves left, it's a tie
+    if (!isMovesLeft(board)) return 0;
+
+    if (isMax) {
+        int best = INT_MIN;
+
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (board[i][j] == '_') {
+                    board[i][j] = PLAYER;
+                    best = max(best, minimax(board, depth + 1, false));
+                    board[i][j] = '_'; // Undo move
+                }
+            }
+        }
+        return best;
+    } else {
+        int best = INT_MAX;
+
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (board[i][j] == '_') {
+                    board[i][j] = OPPONENT;
+                    best = min(best, minimax(board, depth + 1, true));
+                    board[i][j] = '_'; // Undo move
+                }
+            }
+        }
+        return best;
+    }
+}
+
+// Find the best possible move
+Move findBestMove(char board[3][3]) {
+    int bestVal = INT_MIN;
+    Move bestMove = {-1, -1};
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (board[i][j] == '_') {
+                board[i][j] = PLAYER;
+                int moveVal = minimax(board, 0, false);
+                board[i][j] = '_'; // Undo move
+
+                if (moveVal > bestVal) {
+                    bestMove = {i, j};
+                    bestVal = moveVal;
+                }
+            }
+        }
+    }
+
+    cout << "The value of the best move is: " << bestVal << endl;
+    return bestMove;
+}
+
+int main() {
+    char board[3][3] = {
+        {'x', 'o', 'x'},
+        {'o', 'o', 'x'},
+        {'_', '_', '_'}
+    };
+
+    Move bestMove = findBestMove(board);
+
+    cout << "The Optimal Move is:" << endl;
+    cout << "ROW: " << bestMove.row << " COL: " << bestMove.col << endl;
+
+    return 0;
+}
 
