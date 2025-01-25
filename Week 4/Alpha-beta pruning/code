@@ -1,1 +1,64 @@
+#include <iostream>
+#include <climits>
+using namespace std;
 
+// Alpha and Beta constants
+const int MAX = INT_MAX;
+const int MIN = INT_MIN;
+
+// Minimax with Alpha-Beta Pruning
+int minimax(int depth, int nodeIndex, bool maximizingPlayer, int values[], int alpha, int beta, int maxDepth)
+{
+    // Terminating condition: leaf node
+    if (depth == maxDepth)
+        return values[nodeIndex];
+
+    if (maximizingPlayer)
+    {
+        int best = MIN;
+
+        // Explore the two children
+        for (int i = 0; i < 2; i++)
+        {
+            int val = minimax(depth + 1, nodeIndex * 2 + i, false, values, alpha, beta, maxDepth);
+            best = max(best, val);
+            alpha = max(alpha, best);
+
+            // Prune the branch
+            if (beta <= alpha)
+                break;
+        }
+        return best;
+    }
+    else
+    {
+        int best = MAX;
+
+        // Explore the two children
+        for (int i = 0; i < 2; i++)
+        {
+            int val = minimax(depth + 1, nodeIndex * 2 + i, true, values, alpha, beta, maxDepth);
+            best = min(best, val);
+            beta = min(beta, best);
+
+            // Prune the branch
+            if (beta <= alpha)
+                break;
+        }
+        return best;
+    }
+}
+
+int main()
+{
+    // Example values array representing leaf nodes of the tree
+    int values[8] = {3, 5, 6, 9, 1, 2, 0, -1};
+
+    // Maximum depth of the tree (log2(size of values array))
+    int maxDepth = 3;
+
+    // Call minimax and print the optimal value
+    cout << "The optimal value is : " << minimax(0, 0, true, values, MIN, MAX, maxDepth) << endl;
+
+    return 0;
+}
