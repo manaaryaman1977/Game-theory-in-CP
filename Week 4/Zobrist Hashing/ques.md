@@ -1,39 +1,99 @@
-Implement Zobrist Hashing for a two-player board game to generate a unique hash value for any given board configuration. This function will help efficiently store and retrieve evaluated board states in future game scenarios.
+#include <bits/stdc++.h>
+using namespace std;
 
-Problem Requirements:
-The board is represented as a 2D matrix, where each cell can either be empty or contain a game piece.
-Each type of piece (e.g., in chess: pawn, knight, rook) and cell position is mapped to a unique random number.
-Use the XOR operation to calculate the hash value for the given board configuration.
-If a piece is moved or removed, the hash value should be updated efficiently without recalculating it from scratch.
+class ZobristHashing {
+private:
+    vector<vector<vector<uint64_t>>> zobristTable;
+    uint64_t hashValue;
+    int rows, cols;
 
-Input:
-A 2D board matrix representing the current game state.
-A pre-generated Zobrist hashing table containing random numbers for each board cell and piece type.
+public:
+    // Constructor to initialize the Zobrist table
+    ZobristHashing(int rows, int cols, int pieceTypes) : rows(rows), cols(cols) {
+        hashValue = 0;
+        zobristTable.resize(rows, vector<vector<uint64_t>>(cols, vector<uint64_t>(pieceTypes)));
+        initializeZobristTable();
+    }
 
-Output:
-A unique hash value representing the current board configuration.
+    // Initialize the Zobrist table with random 64-bit numbers
+    void initializeZobristTable() {
+        random_device rd;
+        mt19937_64 gen(rd());
+        uniform_int_distribution<uint64_t> dist(0, UINT64_MAX);
 
-Example:
-For a simple chess-like board:
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < cols; ++j) {
+                for (int k = 0; k < zobristTable[i][j].size(); ++k) {
+                    zobristTable[i][j][k] = dist(gen);
+                }
+            }
+        }
+    }
 
-Board: 
-[
-    ["Rook", "", "Knight"],
-    ["", "Pawn", ""],
-    ["", "", ""]
-]
-Random Numbers Table: 
-[
-    [rand1, rand2, rand3],  # Cell 1
-    [rand4, rand5, rand6],  # Cell 2
-    ...
-]
-The hash function should compute a unique hash value for the above board. If a move is made (e.g., "Knight" moves), update the hash using efficient XOR operations.
+    // Compute the hash value for the initial board state
+    uint64_t computeInitialHash(const vector<vector<int>> &board) {
+        hashValue = 0;
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < cols; ++j) {
+                if (board[i][j] != -1) { // -1 represents an empty cell
+                    hashValue ^= zobristTable[i][j][board[i][j]];
+                }
+            }
+        }
+        return hashValue;
+    }
 
-Constraints:
-Use 64-bit random numbers for Zobrist hashing to minimize collisions.
-Ensure the function can handle updates to the board state dynamically.
+    // Update the hash value when a piece is moved or removed
+    void updateHash(int row, int col, int pieceType, bool isRemove) {
+        if (pieceType != -1) {
+            hashValue ^= zobristTable[row][col][pieceType];
+        }
+    }
 
-Bonus:
-Implement a way to initialize the random numbers table dynamically.
-Add functionality to verify that hash values for identical board states are consistent.
+    // Undo a move by reversing the XOR operation
+    void undoMove(int row, int col, int pieceType) {
+        if (pieceType != -1) {
+            hashValue ^= zobristTable[row][col][pieceType];
+        }
+    }
+
+    // Get the current hash value
+    uint64_t getHashValue() const {
+        return hashValue;
+    }
+};
+
+// Example usage
+int main() {
+    int rows = 3, cols = 3, pieceTypes = 3; // Define the board size and number of piece types
+
+    // Example board: -1 represents an empty cell, 0, 1, 2 represent piece types
+    vector<vector<int>> board = {
+        {0, -1, 1},
+        {-1, 2, -1},
+        {-1, -1, -1}
+    };
+
+    ZobristHashing zobrist(rows, cols, pieceTypes);
+
+    // Compute the initial hash value
+    uint64_t initialHash = zobrist.computeInitialHash(board);
+    cout << "Initial Hash: " << initialHash << endl;
+
+    // Update the hash: Move the Knight (piece type 1) from (0, 2) to (2, 1)
+    zobrist.updateHash(0, 2, 1, true); // Remove the piece from (0, 2)
+    zobrist.updateHash(2, 1, 1, false); // Place the piece at (2, 1)
+
+    // Get the updated hash value
+    uint64_t updatedHash = zobrist.getHashValue();
+    cout << "Updated Hash: " << updatedHash << endl;
+
+    // Undo the move and verify consistency
+    zobrist.undoMove(2, 1, 1); // Remove the piece from (2, 1)
+    zobrist.undoMove(0, 2, 1); // Place the piece back at (0, 2)
+
+    uint64_t restoredHash = zobrist.getHashValue();
+    cout << "Restored Hash: " << restoredHash << endl;
+
+    return 0;
+}
